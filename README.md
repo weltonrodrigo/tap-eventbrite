@@ -25,7 +25,7 @@ This tap is written in python and works perfectly on Python 3.6. Make sure Pytho
     
      - `EVENTBRITE_TOKEN` - Your token.
      - `ORG_ID` - Your organization's id
-     - `RUN_DAILY` - `True`/`False`. If `True`,the tap just grabs the new data only. If `False`, the tap grabs all the current data in Eventbrite.  
+     - `RUN_DAILY` - `True`/`False`. If `True`, the tap just grabs the new data only. If `False`, the tap grabs all the current data in Eventbrite.  
 
 3. Run
 
