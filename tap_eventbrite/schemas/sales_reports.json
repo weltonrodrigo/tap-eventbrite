@@ -1,0 +1,32 @@
+{
+    "type": ["null", "object"],
+    "additionalProperties": false,
+    "properties": {
+		"date": {
+			"type": ["null", "string"],
+			"format": "date-time"
+		},
+		"date_localized": {
+			"type": ["null", "string"],
+			"format": "date-time"
+		},
+		"totals.currency": {
+			"type": ["null", "string"]
+		},
+		"totals.gross": {
+			"type": ["null", "string"]
+		},
+		"totals.net": {
+			"type": ["null", "string"]
+		},
+		"totals.quantity": {
+			"type": ["null", "integer"]
+		},
+		"totals.fees": {
+			"type": ["null", "string"]
+		},
+		"event_id": {
+			"type": ["null", "string"]
+		}
+    }
+}

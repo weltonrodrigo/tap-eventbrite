@@ -1,0 +1,176 @@
+{
+    "type": ["null", "object"],
+    "additionalProperties": false,
+    "properties": {
+		"team.id": {
+			"type": ["null", "string"]
+		},
+		"team.name": {
+			"type": ["null", "string"]
+		},
+		"team.date_joined": {
+			"type": ["null", "string"],
+			"format": "date-time"
+		},
+		"team.event_id": {
+			"type": ["null", "string"]
+		},
+		"costs.base_price.display": {
+			"type": ["null", "string"]
+		},
+		"costs.base_price.currency": {
+			"type": ["null", "string"]
+		},
+		"costs.base_price.value": {
+			"type": ["null", "integer"]
+		},
+		"costs.base_price.major_value": {
+			"type": ["null", "string"]
+		},
+		"costs.eventbrite_fee.display": {
+			"type": ["null", "string"]
+		},
+		"costs.eventbrite_fee.currency": {
+			"type": ["null", "string"]
+		},
+		"costs.eventbrite_fee.value": {
+			"type": ["null", "integer"]
+		},
+		"costs.eventbrite_fee.major_value": {
+			"type": ["null", "string"]
+		},
+		"costs.gross.display": {
+			"type": ["null", "string"]
+		},
+		"costs.gross.currency": {
+			"type": ["null", "string"]
+		},
+		"costs.gross.value": {
+			"type": ["null", "integer"]
+		},
+		"costs.gross.major_value": {
+			"type": ["null", "string"]
+		},
+		"costs.payment_fee.display": {
+			"type": ["null", "string"]
+		},
+		"costs.payment_fee.currency": {
+			"type": ["null", "string"]
+		},
+		"costs.payment_fee.value": {
+			"type": ["null", "integer"]
+		},
+		"costs.payment_fee.major_value": {
+			"type": ["null", "string"]
+		},
+		"costs.tax.display": {
+			"type": ["null", "string"]
+		},
+		"costs.tax.currency": {
+			"type": ["null", "string"]
+		},
+		"costs.tax.value": {
+			"type": ["null", "integer"]
+		},
+		"costs.tax.major_value": {
+			"type": ["null", "string"]
+		},
+		"resource_uri": {
+			"type": ["null", "string"]
+		},
+		"id": {
+			"type": ["null", "string"]
+		},
+		"created": {
+			"type": ["null", "string"],
+            "format": "date-time"
+		},
+		"changed": {
+			"type": ["null", "string"],
+            "format": "date-time"
+		},
+		"quantity": {
+			"type": ["null", "integer"]
+		},
+		"profile.first_name": {
+			"type": ["null", "string"]
+		},
+		"profile.last_name": {
+			"type": ["null", "string"]
+		},
+		"profile.addresses.bill.postal_code": {
+			"type": ["null", "string"]
+		},
+		"profile.addresses.bill.country": {
+			"type": ["null", "string"]
+		},
+		"profile.cell_phone": {
+			"type": ["null", "string"]
+		},
+		"profile.email": {
+			"type": ["null", "string"]
+		},
+		"profile.name": {
+			"type": ["null", "string"]
+		},
+		"barcodes.status": {
+			"type": ["null", "string"]
+		},
+		"barcodes.barcode": {
+			"type": ["null", "string"]
+		},
+		"barcodes.created": {
+			"type": ["null", "string"],
+            "format": "date-time"
+		},
+		"barcodes.changed": {
+			"type": ["null", "string"],
+            "format": "date-time"
+		},
+		"barcodes.checkin_type": {
+			"type": ["null", "string"]
+		},
+		"barcodes.is_printed": {
+			"type": ["null", "string"]
+		},
+		"answers.answer": {
+			"type": ["null", "string"]
+		},
+		"answers.question": {
+			"type": ["null", "string"]
+		},
+		"answers.type": {
+			"type": ["null", "string"]
+		},
+		"answers.question_id": {
+			"type": ["null", "string"]
+		},
+		"checked_in": {
+			"type": ["null", "boolean"]
+		},
+		"cancelled": {
+			"type": ["null", "boolean"]
+		},
+		"refunded": {
+			"type": ["null", "boolean"]
+		},
+		"status": {
+			"type": ["null", "string"]
+		},
+		"ticket_class_name": {
+			"type": ["null", "string"]
+		},
+		"delivery_method": {
+			"type": ["null", "string"]
+		},
+		"event_id": {
+			"type": ["null", "string"]
+		},
+		"order_id": {
+			"type": ["null", "string"]
+		},
+		"ticket_class_id": {
+			"type": ["null", "string"]
+		}
+    }
+}

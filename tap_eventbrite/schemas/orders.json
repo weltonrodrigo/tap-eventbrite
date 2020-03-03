@@ -1,0 +1,99 @@
+{
+    "type": ["null", "object"],
+    "additionalProperties": false,
+    "properties": {
+		"resource_uri": {
+			"type": ["null", "string"]
+		},
+		"changed": {
+			"type": ["null", "string"],
+			"format": "date-time"
+		},
+		"created": {
+			"type": ["null", "string"],
+			"format": "date-time"
+		},
+		"id": {
+			"type": ["null", "string"]
+		},
+		"first_name": {
+			"type": ["null", "string"]
+		},
+		"last_name": {
+			"type": ["null", "string"]
+		},
+		"email": {
+			"type": ["null", "string"]
+		},
+		"status": {
+			"type": ["null", "string"]
+		},
+		"event_id": {
+			"type": ["null", "string"]
+		},
+		"name": {
+			"type": ["null", "string"]
+        },
+		"costs.base_price.display": {
+			"type": ["null", "string"]
+        },
+		"costs.base_price.currency": {
+			"type": ["null", "string"]
+        },
+		"costs.base_price.value": {
+			"type": ["null", "integer"]
+        },
+		"costs.base_price.major_value": {
+			"type": ["null", "string"]
+        },
+		"costs.eventbrite_fee.display": {
+			"type": ["null", "string"]
+        },
+		"costs.eventbrite_fee.currency": {
+			"type": ["null", "string"]
+        },
+		"costs.eventbrite_fee.value": {
+			"type": ["null", "integer"]
+        },
+		"costs.eventbrite_fee.major_value": {
+			"type": ["null", "string"]
+        },
+		"costs.gross.display": {
+			"type": ["null", "string"]
+        },
+		"costs.gross.currency": {
+			"type": ["null", "string"]
+        },
+		"costs.gross.value": {
+			"type": ["null", "integer"]
+        },
+		"costs.gross.major_value": {
+			"type": ["null", "string"]
+        },
+		"costs.payment_fee.display": {
+			"type": ["null", "string"]
+        },
+		"costs.payment_fee.currency": {
+			"type": ["null", "string"]
+        },
+		"costs.payment_fee.value": {
+			"type": ["null", "integer"]
+        },
+		"costs.payment_fee.major_value": {
+			"type": ["null", "string"]
+        },
+		"costs.tax.display": {
+			"type": ["null", "string"]
+        },
+		"costs.tax.currency": {
+			"type": ["null", "string"]
+        },
+		"costs.tax.value": {
+			"type": ["null", "integer"]
+        },
+		"costs.tax.major_value": {
+			"type": ["null", "string"]
+        }
+        
+    }
+}

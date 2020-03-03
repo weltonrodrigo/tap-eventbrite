@@ -1,0 +1,24 @@
+{
+    "type": ["null", "object"],
+    "additionalProperties": false,
+    "properties": {
+		"resource_uri": {
+			"type": ["null", "string"]
+		},
+		"id": {
+			"type": ["null", "string"]
+		},
+		"name": {
+			"type": ["null", "string"]
+        },
+        "name_localized": {
+			"type": ["null", "string"]
+		},
+		"short_name": {
+			"type": ["null", "string"]
+		},
+		"short_name_localized": {
+			"type": ["null", "string"]
+		}
+    }
+}

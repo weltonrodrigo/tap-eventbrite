@@ -1,0 +1,173 @@
+{
+    "type": ["null", "object"],
+    "additionalProperties": false,
+    "properties": {
+		"name.text": {
+			"type": ["null", "string"]
+		},
+		"description.text": {
+			"type": ["null", "string"]
+		},
+		"id": {
+			"type": ["null", "string"]
+		},
+		"url": {
+			"type": ["null", "string"]
+		},
+		"vanity_url": {
+			"type": ["null", "string"]
+		},
+		"start.timezone": {
+			"type": ["null", "string"]
+		},
+		"start.local": {
+			"type": ["null", "string"],
+            "format": "date-time"
+		},
+		"start.utc": {
+			"type": ["null", "string"],
+            "format": "date-time"
+		},
+		"end.timezone": {
+			"type": ["null", "string"]
+		},
+		"end.local": {
+			"type": ["null", "string"],
+            "format": "date-time"
+		},
+		"end.utc": {
+			"type": ["null", "string"],
+            "format": "date-time"
+		},
+		"organization_id": {
+			"type": ["null", "string"]
+		},
+		"created": {
+			"type": ["null", "string"],
+            "format": "date-time"
+		},
+		"changed": {
+			"type": ["null", "string"],
+            "format": "date-time"
+		},
+		"published": {
+			"type": ["null", "string"],
+            "format": "date-time"
+		},
+		"capacity": {
+			"type": ["null", "integer"]
+		},
+		"capacity_is_custom": {
+			"type": ["null", "boolean"]
+		},
+		"status": {
+			"type": ["null", "string"]
+		},
+		"currency": {
+			"type": ["null", "string"]
+		},
+		"listed": {
+			"type": ["null", "boolean"]
+		},
+		"shareable": {
+			"type": ["null", "boolean"]
+		},
+		"invite_only": {
+			"type": ["null", "boolean"]
+		},
+		"online_event": {
+			"type": ["null", "boolean"]
+		},
+		"show_remaining": {
+			"type": ["null", "boolean"]
+		},
+		"tx_time_limit": {
+			"type": ["null", "integer"]
+		},
+		"hide_start_date": {
+			"type": ["null", "boolean"]
+		},
+		"hide_end_date": {
+			"type": ["null", "boolean"]
+		},
+		"locale": {
+			"type": ["null", "string"]
+		},
+		"is_locked": {
+			"type": ["null", "boolean"]
+		},
+		"privacy_setting": {
+			"type": ["null", "string"]
+		},
+		"is_series": {
+			"type": ["null", "boolean"]
+		},
+		"is_series_parent": {
+			"type": ["null", "boolean"]
+		},
+
+		"inventory_type": {
+			"type": ["null", "string"]
+		},
+		"is_reserved_seating": {
+			"type": ["null", "boolean"]
+		},
+		"show_pick_a_seat": {
+			"type": ["null", "boolean"]
+		},
+		"show_seatmap_thumbnail": {
+			"type": ["null", "boolean"]
+		},
+		"show_colors_in_seatmap_thumbnail": {
+			"type": ["null", "boolean"]
+		},
+		"source": {
+			"type": ["null", "string"]
+		},
+		"is_free": {
+			"type": ["null", "boolean"]
+		},
+		"version": {
+			"type": ["null", "string"]
+		},
+		"summary": {
+			"type": ["null", "string"]
+		},
+		"organizer_id": {
+			"type": ["null", "string"]
+		},
+		"venue_id": {
+			"type": ["null", "string"]
+		},
+		"category_id": {
+			"type": ["null", "string"]
+		},
+		"subcategory_id": {
+			"type": ["null", "string"]
+		},
+		"format_id": {
+			"type": ["null", "string"]
+		},
+		"resource_uri": {
+			"type": ["null", "string"]
+		},
+		"is_externally_ticketed": {
+			"type": ["null", "boolean"]
+		},
+		"logo.id": {
+			"type": ["null", "string"]
+		},
+		"logo.url": {
+			"type": ["null", "string"]
+		},
+		"logo.edge_color": {
+			"type": ["null", "string"]
+		},
+		"logo.aspect_ratio": {
+			"type": ["null", "string"]
+		},
+		"logo.edge_color_set": {
+			"type": ["null", "boolean"]
+		}
+    }
+}
