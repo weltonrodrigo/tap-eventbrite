@@ -2,14 +2,17 @@
 import os
 import json
 import singer
-from singer import utils, metadata
 import datetime
+
+from singer import utils, metadata
 from tap_eventbrite.event import events_call
 from tap_eventbrite.attendee import attendees_call
 from tap_eventbrite.sales_report import sales_report_call
 from tap_eventbrite.order import orders_call
 from tap_eventbrite.category import categories_call
 from tap_eventbrite.subcategory import subcategories_call
+
+EVENTS_LIST = [] # User for sales reports table!
 
 REQUIRED_CONFIG_KEYS = ["EVENTBRITE_TOKEN", "RUN_DAILY", "ORG_ID"]
 LOGGER = singer.get_logger()
@@ -29,6 +32,7 @@ def load_schemas():
 
     return schemas
 
+# Load metadata
 def load_metadata(schema,key_properties=None,replication_keys=None):
     return [
             {
@@ -108,114 +112,103 @@ def get_selected_streams(catalog):
 
     return selected_streams
 
+# Send data into Stitch via Singer library.
+def sync_stitch_data(records, data_key, stream_schema, stream_id, loading_new_data = None, events_list=None, event_id=None):
+    count = 0
+    for record in records[data_key]:  
+        if stream_id == "events":
+            events_list.append(record["id"])
+
+        record = parse_date(stream_schema, record, loading_new_data)
+
+        if stream_id == "sales_reports":
+            record.update({"event_id": event_id})
+
+        # Send data into Stitch
+        if record is not None:
+            singer.write_record(stream_id, record)
+            count += 1    
+
+    return count
+
+# Sync data into GBQ 
 def sync(config, state, catalog):
     selected_stream_ids = get_selected_streams(catalog)
     loading_new_data = config['RUN_DAILY']
-    events_list = []
+    global EVENTS_LIST
+
     # Loop over streams in catalog
     for stream in catalog['streams']:
         stream_id = stream['tap_stream_id']
         stream_schema = stream['schema']
         if stream_id in selected_stream_ids:
-            # TODO: sync code for stream goes here...
+            # Write schema table
             singer.write_schema(stream_id, stream_schema, stream['key_properties'])
 
-            has_more_items = True
+            has_more_items = True 
             continue_token = ""
             count = 0
 
+            # Events table
             if stream_id == "events":
-                
-                # has_more_items = True
-                # continue_token = ""
-
                 while has_more_items:
-
                     records = events_call(config['EVENTBRITE_TOKEN'], config['ORG_ID'], continue_token)
 
                     if len(records['events'])==0:
                         LOGGER.info("{}: There is no data to stream".format(stream_id))
-
                     else: 
-                        for record in records['events']:  
-                            events_list.append(record['id'])
-                            record = parse_date(stream_schema, record, loading_new_data)
-                            if record is not None:
-                                singer.write_record(stream_id, record)
-                                count += 1
+                        count += sync_stitch_data(records, 'events', stream_schema, stream_id, loading_new_data, EVENTS_LIST)
                     
+                    # Check the data in the pagination response, if continuation is not None => Going to handle the next page.
                     if records['pagination'].get('continuation') is not None:
                         continue_token =  records['pagination'].get('continuation')
-                    
+                    # if continuation is None => Finished
                     else:
                         has_more_items = False
 
             elif stream_id == "attendees":
-                # has_more_items = True
-                # continue_token = ""
-
                 while has_more_items:
                     changed_since = None
 
                     if loading_new_data:
-                        changed_since = get_current_time_formatted()
+                        changed_since = get_threshold_time_formatted()
                     
                     records = attendees_call(config['EVENTBRITE_TOKEN'], config['ORG_ID'], continue_token, changed_since)
 
-                    # LOGGER.info(records)
-
                     if len(records['attendees']) == 0:
                         LOGGER.info("{}: There is no data to stream".format(stream_id))
-
                     else: 
-                        for record in records['attendees']:  
-                            record = parse_date(stream_schema, record)
-                            if record is not None:
-                                singer.write_record(stream_id, record)
-                                count += 1
-                    
+                        count += sync_stitch_data(records, 'attendees', stream_schema, stream_id)   
+
                     if records['pagination'].get('continuation') is not None:
                         continue_token =  records['pagination'].get('continuation')
-                    
                     else:
                         has_more_items = False
 
             elif stream_id == "sales_reports":
-                LOGGER.info(events_list)
-                LOGGER.info("Making loop for sales_reports. Times: {}!".format(len(events_list)))
-                for event_id in events_list:
+                LOGGER.info("Making loop for sales_reports. Times: {}!".format(len(EVENTS_LIST)))
+                for event_id in EVENTS_LIST:
                     records = sales_report_call(config['EVENTBRITE_TOKEN'], config['ORG_ID'], event_id, loading_new_data)
 
                     if len(records['data']) == 0:
                         LOGGER.info("{}: There is no data to stream".format(stream_id))
-                    
                     else:
-                        for record in records['data']:  
-                            record = parse_date(stream_schema, record)
-                            record.update({"event_id": event_id})
-                            # LOGGER.info(record)
-                            if record is not None:
-                                singer.write_record(stream_id, record)
-                                count += 1
+                        count += sync_stitch_data(records, 'data', stream_schema, stream_id, event_id = event_id)
 
             elif stream_id == "orders":
                 while has_more_items:
                     changed_since = None
 
                     if loading_new_data:
-                        changed_since = get_current_time_formatted()
+                        changed_since = get_threshold_time_formatted()
                     
                     records = orders_call(config['EVENTBRITE_TOKEN'], config['ORG_ID'], continue_token, changed_since)
                     
                     if len(records['orders']) == 0:
-                        LOGGER.info("{}: There is no data to stream".format(stream_id))
-                    
+                        LOGGER.info("{}: There is no data to stream".format(stream_id))          
                     else:
-                        for record in records['orders']:  
-                            record = parse_date(stream_schema, record)
-                            if record is not None:
-                                singer.write_record(stream_id, record)
-                                count += 1
+                        count += sync_stitch_data(records, 'orders', stream_schema, stream_id)
+
                     if records['pagination'].get('continuation') is not None:
                         continue_token =  records['pagination'].get('continuation')
                     else:
@@ -233,17 +226,11 @@ def sync(config, state, catalog):
                         
                         if len(records['categories']) == 0:
                             LOGGER.info("{}: There is no data to stream".format(stream_id))
-                        
                         else:
-                            for record in records['categories']:  
-                                record = parse_date(stream_schema, record)
-                                if record is not None:
-                                    singer.write_record(stream_id, record)
-                                    count += 1
+                            count += sync_stitch_data(records, 'categories', stream_schema, stream_id)
 
                         if records['pagination'].get('continuation') is not None:
                             continue_token =  records['pagination'].get('continuation')
-
                         else:
                             has_more_items = False
 
@@ -256,19 +243,14 @@ def sync(config, state, catalog):
 
                     else:
                         records = subcategories_call(config['EVENTBRITE_TOKEN'], config['ORG_ID'], continue_token)
+
                         if len(records['subcategories']) == 0:
                             LOGGER.info("{}: There is no data to stream".format(stream_id))
-                        
                         else:
-                            for record in records['subcategories']:  
-                                record = parse_date(stream_schema, record)
-                                if record is not None:
-                                    singer.write_record(stream_id, record)
-                                    count += 1
+                            count += sync_stitch_data(records, 'subcategories', stream_schema, stream_id)
 
                         if records['pagination'].get('continuation') is not None:
                             continue_token =  records['pagination'].get('continuation')
-
                         else:
                             has_more_items = False
 
@@ -279,25 +261,28 @@ def sync(config, state, catalog):
             LOGGER.info("\033[92mFor {}: loaded {} record(s) into Stitch!\033[0m".format(stream_id, count))
     return
 
-def get_current_time():
+def get_threshold_time():
     now =  datetime.datetime.now() - datetime.timedelta(days=1)
     return now
 
-def get_current_time_formatted():
+def get_threshold_time_formatted():
     now =  datetime.datetime.now() - datetime.timedelta(days=1)
     formatted_date = "{}-{}-{}T00:00:00Z".format(now.year, now.month, now.day)
     return formatted_date
 
+# Correcting the data before sending it to Google Bigquery
 def parse_date(schema, record, loading_new_data = None):
     result = {}
     schema_properties = schema['properties']
     schema_keys = []
 
+    # loading_new_data: Almost use for events table, cause the events API does not support to retrieve the new data
+    # Basically, filtering out the new data
     if loading_new_data:
         created_time = datetime.datetime.strptime(record['created'],"%Y-%m-%dT%H:%M:%SZ")
-        changed_time = datetime.datetime.strptime(record['created'],"%Y-%m-%dT%H:%M:%SZ")
+        changed_time = datetime.datetime.strptime(record['changed'],"%Y-%m-%dT%H:%M:%SZ")
 
-        now =  get_current_time()
+        now =  get_threshold_time()
         changed_time_days = changed_time - now
         created_time_days = created_time - now
 
@@ -310,11 +295,11 @@ def parse_date(schema, record, loading_new_data = None):
     for schema_key in schema_keys:
         schema_key_properties = schema_properties[schema_key]
         if "." in schema_key:
-            dict_levels = schema_key.split('.')
-            temp_data = record[dict_levels[0]]
-            dict_levels.remove(dict_levels[0])
+            dict_nested_keys = schema_key.split(".")
+            temp_data = record[dict_nested_keys[0]]
+            dict_nested_keys.remove(dict_nested_keys[0])
 
-            for correct_schema in dict_levels:
+            for correct_schema in dict_nested_keys:
                 try:
                     temp_data = temp_data[correct_schema]
                     if schema_key_properties.get('format') is not None:
