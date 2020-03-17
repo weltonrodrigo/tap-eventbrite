@@ -20,8 +20,8 @@ LOGGER = singer.get_logger()
 def get_abs_path(path):
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
 
-# Load schemas from schemas folder
 def load_schemas():
+    """Load schemas from schemas folder"""
     schemas = {}
 
     for filename in os.listdir(get_abs_path('schemas')):
@@ -32,8 +32,8 @@ def load_schemas():
 
     return schemas
 
-# Load metadata
 def load_metadata(schema,key_properties=None,replication_keys=None):
+    """Load metadata"""
     return [
             {
                 "metadata":{
@@ -49,6 +49,7 @@ def load_metadata(schema,key_properties=None,replication_keys=None):
         ]
 
 def discover():
+    """Add replication_keys and key_properties for each table"""
     raw_schemas = load_schemas()
     streams = []
 
@@ -98,41 +99,65 @@ def discover():
     return {'streams': streams}
 
 def get_selected_streams(catalog):
-    '''
+    """
     Gets selected streams.  Checks schema's 'selected' first (legacy)
     and then checks metadata (current), looking for an empty breadcrumb
     and mdata with a 'selected' entry
-    '''
+    """
     selected_streams = []
     for stream in catalog['streams']:
         stream_metadata = metadata.to_map(stream['metadata'])
-        # stream metadata will have an empty breadcrumb
+        """stream metadata will have an empty breadcrumb"""
         if metadata.get(stream_metadata, (), "selected"):
             selected_streams.append(stream['tap_stream_id'])
 
     return selected_streams
 
-# Send data into Stitch via Singer library.
 def sync_stitch_data(records, data_key, stream_schema, stream_id, loading_new_data = None, events_list=None, event_id=None):
+    """
+    Basiclly, this function will send the data into Stitch by this line of code:
+    singer.write_record(stream_id, record)
+    Keyword arguments:
+    stream_id -- table name
+    record -- a single data in JSON format
+
+    Then, the Stitch will replicate the data into Google Big Query (GBQ). 
+    We already have the configuration in Stitch that created a pipeline-
+    into GBQ and the method is append.
+    """
     count = 0
     for record in records[data_key]:  
-        if stream_id == "events":
-            events_list.append(record["id"])
 
+        if stream_id == "events":
+            """
+            For the events table (stream_id == "events"), we need to collect the-
+            event ids into a list.
+            That will be served for the sale reports table. Sale reports will-
+            based on those event ids to retrieve the report for each event. 
+            """
+            events_list.append(record["id"])
+        
+        # parse_date: Correct the DateTime format
         record = parse_date(stream_schema, record, loading_new_data)
 
         if stream_id == "sales_reports":
+            """
+            For the sales reports table (stream_id == "sales_reports"),We need-
+            to add the event_id to the data before send it to Stitch, so we can know which event this-
+            report belongs to. 
+            """
             record.update({"event_id": event_id})
 
-        # Send data into Stitch
+        # Check if record is not None => send the data into Stitch!
         if record is not None:
             singer.write_record(stream_id, record)
             count += 1    
 
+    # Return number of records had been sent into Stitch
     return count
 
-# Sync data into GBQ 
 def sync(config, state, catalog):
+    """Sync data into GBQ"""
     selected_stream_ids = get_selected_streams(catalog)
     loading_new_data = config['RUN_DAILY']
     global EVENTS_LIST
@@ -142,7 +167,7 @@ def sync(config, state, catalog):
         stream_id = stream['tap_stream_id']
         stream_schema = stream['schema']
         if stream_id in selected_stream_ids:
-            # Write schema table
+            # Write schema table 
             singer.write_schema(stream_id, stream_schema, stream['key_properties'])
 
             has_more_items = True 
@@ -159,13 +184,18 @@ def sync(config, state, catalog):
                     else: 
                         count += sync_stitch_data(records, 'events', stream_schema, stream_id, loading_new_data, EVENTS_LIST)
                     
-                    # Check the data in the pagination response, if continuation is not None => Going to handle the next page.
+                    """
+                    Check the data in the pagination response, if continuation- 
+                    is not None => Going to handle the next page.
+                    """
                     if records['pagination'].get('continuation') is not None:
                         continue_token =  records['pagination'].get('continuation')
-                    # if continuation is None => Finished
+                        
+                    # if continuation is None => Finished 
                     else:
                         has_more_items = False
 
+            # Attendees table
             elif stream_id == "attendees":
                 while has_more_items:
                     changed_since = None
@@ -185,6 +215,7 @@ def sync(config, state, catalog):
                     else:
                         has_more_items = False
 
+            # Sales Reports table 
             elif stream_id == "sales_reports":
                 LOGGER.info("Making loop for sales_reports. Times: {}!".format(len(EVENTS_LIST)))
                 for event_id in EVENTS_LIST:
@@ -195,6 +226,7 @@ def sync(config, state, catalog):
                     else:
                         count += sync_stitch_data(records, 'data', stream_schema, stream_id, event_id = event_id)
 
+            # Orders table
             elif stream_id == "orders":
                 while has_more_items:
                     changed_since = None
@@ -213,9 +245,9 @@ def sync(config, state, catalog):
                         continue_token =  records['pagination'].get('continuation')
                     else:
                         has_more_items = False
-            
-            elif stream_id == "categories":
 
+            # Categories table  
+            elif stream_id == "categories":
                 while has_more_items:
                     if loading_new_data:
                         LOGGER.info("There is no data for categories!")
@@ -234,8 +266,8 @@ def sync(config, state, catalog):
                         else:
                             has_more_items = False
 
+            # Subcategories table  
             elif stream_id == "subcategories":
-    
                 while has_more_items:
                     if loading_new_data:
                         LOGGER.info("There is no data for subcategories!")
@@ -270,15 +302,18 @@ def get_threshold_time_formatted():
     formatted_date = "{}-{}-{}T00:00:00Z".format(now.year, now.month, now.day)
     return formatted_date
 
-# Correcting the data before sending it to Google Bigquery
 def parse_date(schema, record, loading_new_data = None):
+    """Correcting the data before sending it to Google Bigquery"""
     result = {}
     schema_properties = schema['properties']
     schema_keys = []
 
-    # loading_new_data: Almost use for events table, cause the events API does not support to retrieve the new data
-    # Basically, filtering out the new data
+
     if loading_new_data:
+        """
+        loading_new_data: Almost use for events table, cause the events API does not-
+        support to retrieve the new data. Basically, filtering out the new data.
+        """
         created_time = datetime.datetime.strptime(record['created'],"%Y-%m-%dT%H:%M:%SZ")
         changed_time = datetime.datetime.strptime(record['changed'],"%Y-%m-%dT%H:%M:%SZ")
 
@@ -336,8 +371,8 @@ def parse_date(schema, record, loading_new_data = None):
 
     return result
 
-# Sorting catalog following the wish list
 def sort_catalog(catalog):
+    """Sorting catalog following the wish list"""
     sorted_catalog = {'streams':[]}
     wish_list = ["events" ,"sales_reports" ,"attendees", "orders", "categories", "subcategories"]
     for element in wish_list:
