@@ -7,7 +7,7 @@ import json
 LOGGER = singer.get_logger() 
 
 def events_call(token, org, continue_token):
-    url = "https://www.eventbriteapi.com/v3/organizations/370069590777/events/?page_size=100"
+    url = "https://www.eventbriteapi.com/v3/organizations/{}/events/?page_size=100".format(org)
 
     if len(continue_token) > 0:
         url = url + "&continuation={}".format(continue_token)
@@ -23,5 +23,5 @@ def events_call(token, org, continue_token):
         return event_json
 
     else:
-        LOGGER.info("An error occerred when calling Events API!")
+        LOGGER.info("An error occurred when calling Events API!")
         return None
